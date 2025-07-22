@@ -55,10 +55,43 @@ const Header = React.memo(() => {
       }
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
-  const handleMenuToggle = () => setMenuOpen((open) => !open);
+    // Overlay y menú móvil accesible
+    let overlay = document.querySelector('.menu-overlay') as HTMLDivElement | null;
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'menu-overlay';
+      document.body.appendChild(overlay);
+    }
+    function isMobile() { return window.innerWidth <= 768; }
+    function closeMenu() {
+      setMenuOpen(false);
+      overlay?.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    function openMenu() {
+      setMenuOpen(true);
+      overlay?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    overlay.onclick = () => { if (menuOpen) closeMenu(); };
+    const handleResize = () => { if (!isMobile() && menuOpen) closeMenu(); };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      overlay && (overlay.onclick = null);
+    };
+  }, [menuOpen]);
+
+  const handleMenuToggle = (e?: React.MouseEvent) => {
+    if (window.innerWidth <= 768 && e) {
+      e.preventDefault();
+      setMenuOpen(open => !open);
+    } else if (!e) {
+      setMenuOpen(open => !open);
+    }
+  };
 
   return (
     <header>
@@ -69,7 +102,12 @@ const Header = React.memo(() => {
         <div className="logo-wrapper-pseudo" />
       </div>
       <nav ref={menuRef} className={`menu-wrapper${menuOpen ? " open" : ""}`}>
-        <button className="menu-toggle menu-title" onClick={handleMenuToggle} aria-label="Toggle menu">
+        <button
+          className="menu-toggle menu-title"
+          onClick={handleMenuToggle}
+          aria-label="Toggle menu"
+        >
+          <span></span>
           Menu
         </button>
         <MenuLinks open={menuOpen} />

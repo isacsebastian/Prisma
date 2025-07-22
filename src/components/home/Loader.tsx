@@ -8,14 +8,18 @@ const Loader: React.FC<LoaderProps> = ({ loading = true }) => {
   const loaderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Aquí puedes agregar animaciones GSAP si lo deseas
-    // Ejemplo: import { gsap } from "gsap"; gsap.to(loaderRef.current, { rotate: 360, repeat: -1, duration: 1, ease: "linear" });
+    if (!loading && loaderRef.current) {
+      loaderRef.current.style.opacity = "0";
+      setTimeout(() => {
+        if (loaderRef.current) loaderRef.current.style.display = "none";
+      }, 500);
+    }
   }, [loading]);
 
   if (!loading) return null;
 
   return (
-    <div className="loader-container" ref={loaderRef}>
+    <div id="loader-container" className="loader-container" ref={loaderRef}>
       <div className="loader" />
     </div>
   );
